@@ -533,6 +533,7 @@
                 const playerScore = gameState.playerHand.score();
                 gameState.message = `你爆牌（${playerScore}），莊家獲勝`;
                 updateUI();
+                updateMessage(gameState.message, 'lose');
                 return;
             }
 
