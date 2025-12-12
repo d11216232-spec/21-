@@ -365,19 +365,19 @@
                     }
                 }
 
-                // After adjustment, if total <= 21 and we started with aces,
-                // check if at least one ace is still counted as 11
                 if (aceCount === 0) return false;
                 
-                // Calculate how many aces were converted to 1
-                let acesConvertedTo1 = 0;
-                while (total > 21 && acesConvertedTo1 < aceCount) {
+                // If total > 21, we need to convert aces to 1
+                // The hand is soft only if after making it valid, at least one ace is still 11
+                while (total > 21 && aceCount > 0) {
                     total -= 10;
-                    acesConvertedTo1++;
+                    aceCount--;
                 }
                 
-                // Soft if at least one ace remains as 11 (not all were converted)
-                return acesConvertedTo1 < aceCount && total <= 21;
+                // Soft if: valid hand (<=21) and at least one ace still counted as 11
+                // (aceCount started > 0, we decremented for converted aces)
+                // If any aces remain in the "11" count, it's soft
+                return total <= 21 && aceCount > 0;
             }
 
             isBlackjack() {
@@ -557,19 +557,8 @@
             const dealerHand = gameState.dealerHand;
             
             // Dealer draws according to rules (S17: stand on all 17s including soft 17)
-            while (true) {
-                const score = dealerHand.score();
-                
-                // Dealer hits on 16 or less
-                if (score < 17) {
-                    dealerHand.addCard(gameState.deck.draw());
-                    continue;
-                }
-                
-                // Dealer stands on 17 or more (S17 rule: stand on soft 17)
-                if (score >= 17) {
-                    break;
-                }
+            while (dealerHand.score() < 17) {
+                dealerHand.addCard(gameState.deck.draw());
             }
 
             // Determine winner
