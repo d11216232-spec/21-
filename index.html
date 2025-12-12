@@ -556,7 +556,9 @@
         function dealerPlay() {
             const dealerHand = gameState.dealerHand;
             
-            // Dealer draws according to rules (S17: stand on all 17s including soft 17)
+            // Dealer draws according to S17 rules (stand on all 17s including soft 17)
+            // Since score() returns 17 for soft 17 (A+6=17), checking score < 17
+            // naturally implements S17 without needing to explicitly check isSoft()
             while (dealerHand.score() < 17) {
                 dealerHand.addCard(gameState.deck.draw());
             }
@@ -593,9 +595,9 @@
             }
 
             gameState.message = message;
-            updateUI();
             
-            // Update message with type for styling
+            // Update UI with styled message
+            updateUI();
             updateMessage(message, type);
         }
 
