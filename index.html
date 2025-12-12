@@ -352,9 +352,12 @@
 
             isSoft() {
                 // A hand is "soft" if it contains an Ace counted as 11
+                if (this.cards.length === 0) return false;
+                
                 let total = 0;
                 let aceCount = 0;
 
+                // Count total and aces
                 for (let card of this.cards) {
                     total += card.value;
                     if (card.rank === 'A') {
@@ -362,8 +365,19 @@
                     }
                 }
 
-                // If we have Aces and haven't adjusted any down, it's soft
-                return aceCount > 0 && total <= 21;
+                // After adjustment, if total <= 21 and we started with aces,
+                // check if at least one ace is still counted as 11
+                if (aceCount === 0) return false;
+                
+                // Calculate how many aces were converted to 1
+                let acesConvertedTo1 = 0;
+                while (total > 21 && acesConvertedTo1 < aceCount) {
+                    total -= 10;
+                    acesConvertedTo1++;
+                }
+                
+                // Soft if at least one ace remains as 11 (not all were converted)
+                return acesConvertedTo1 < aceCount && total <= 21;
             }
 
             isBlackjack() {
@@ -542,10 +556,9 @@
         function dealerPlay() {
             const dealerHand = gameState.dealerHand;
             
-            // Dealer draws according to rules
+            // Dealer draws according to rules (S17: stand on all 17s including soft 17)
             while (true) {
                 const score = dealerHand.score();
-                const isSoft = dealerHand.isSoft();
                 
                 // Dealer hits on 16 or less
                 if (score < 17) {
