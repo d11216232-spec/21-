@@ -352,12 +352,13 @@
 
             isSoft() {
                 // A hand is "soft" if it contains an Ace counted as 11
+                // Example: A+6=17 is soft (ace=11), but A+6+K=17 is hard (ace=1)
                 if (this.cards.length === 0) return false;
                 
                 let total = 0;
                 let aceCount = 0;
 
-                // Count total and aces
+                // Count total and aces (all aces start as 11)
                 for (let card of this.cards) {
                     total += card.value;
                     if (card.rank === 'A') {
@@ -367,16 +368,13 @@
 
                 if (aceCount === 0) return false;
                 
-                // If total > 21, we need to convert aces to 1
-                // The hand is soft only if after making it valid, at least one ace is still 11
+                // Adjust aces from 11 to 1 as needed to avoid bust
                 while (total > 21 && aceCount > 0) {
-                    total -= 10;
-                    aceCount--;
+                    total -= 10;  // Convert one ace from 11 to 1
+                    aceCount--;   // Track how many aces still counted as 11
                 }
                 
-                // Soft if: valid hand (<=21) and at least one ace still counted as 11
-                // (aceCount started > 0, we decremented for converted aces)
-                // If any aces remain in the "11" count, it's soft
+                // Soft if: valid hand (<=21) AND at least one ace still counted as 11
                 return total <= 21 && aceCount > 0;
             }
 
@@ -432,8 +430,7 @@
                 // Only show first card's value
                 const firstCard = hand.cards[0];
                 if (firstCard) {
-                    const firstValue = firstCard.rank === 'A' ? 11 : firstCard.value;
-                    scoreElement.textContent = `點數: ${firstValue}+?`;
+                    scoreElement.textContent = `點數: ${firstCard.value}+?`;
                 } else {
                     scoreElement.textContent = '點數: -';
                 }
@@ -557,9 +554,10 @@
         function dealerPlay() {
             const dealerHand = gameState.dealerHand;
             
-            // Dealer draws according to S17 rules (stand on all 17s including soft 17)
-            // Since score() returns 17 for soft 17 (A+6=17), checking score < 17
-            // naturally implements S17 without needing to explicitly check isSoft()
+            // S17 Rule: "Stand on Soft 17"
+            // Dealer hits on 16 or below, stands on 17 or higher (including soft 17)
+            // Since score() returns 17 for soft 17 (e.g., A+6), the condition
+            // score() < 17 correctly implements S17 without explicit soft checking
             while (dealerHand.score() < 17) {
                 dealerHand.addCard(gameState.deck.draw());
             }
